@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ライフプランチャート</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.0.2"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="css/sample.css">
+</head>
+
+<body>
+  <h1>ライフチャート</h1>
+  <div class="container">
+    <canvas id="lifePlanChart"></canvas>
+  </div>
+
+  <div class="container update-container container-with-margin-top">
+    <input type="number" id="max_year_input" placeholder="最大年齢を入力" class="input-field">
+    <button id="update_max_year" class="button">最大年齢を更新</button>
+  </div>
+
+  <div class="container container-with-margin-top">
+    <table id="memo_table" class="memo-table">
+      <thead>
+        <tr>
+          <th style="width: 10%;">年</th>
+          <th style="width: 10%;">幸福度</th>
+          <th style="width: 20%;">タイトル</th>
+          <th style="width: 50%;">メモ</th>
+          <th style="width: 10%;">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- 動的に生成される行 -->
+      </tbody>
+    </table>
+    <div class="button-container">
+      <button id="add_row" class="button">行を追加</button>
+    </div>
+  </div>
+
+  <script>
+    let maxYear = 33; // デフォルトの最大年齢
+
+    function generateYears(maxYear) {
+      return Array.from({ length: maxYear }, (_, i) => i + 1);
+    }
+
+    let years = generateYears(maxYear);
+
+    // ライフプランのデータを定義
+    const lifePlanData = {
+      labels: years,
+      datasets: [{
+        data: years.map(year => {
+          const savedData = localStorage.getItem(`memo2_${year}`);
+          if (savedData) {
+            const parsedData = JSON.parse(savedData);
+            return parsedData.happiness;
+          }
+          return null;
+        }),
+        backgroundColor: 'rgba(209, 200, 187, 0.2)', // D1C8BBの半透明
+        borderColor: '#B49A76',
+        borderWidth: 1,
+        fill: false, // fill を false に設定して折れ線グラフにする
+        lineTension: 0, // 直線で結ぶ
+        spanGaps: true, // ギャップを飛ばして線を描画する
+        pointBackgroundColor: '#D1C8BB',
+        pointBorderColor: '#6B4D3B'
+      }]
+    };
+
+    // チャートのオプションを定義
+    const config = {
+      type: 'line', // 折れ線グラフのタイプを設定
+      data: lifePlanData,
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: false,
+            min: -5,
+            max: 5,
+            title: {
+              display: true,
+              text: '幸福感'
+            },
+          },
+          x: {
+            title: {
+              display: true,
+              text: '年'
+            }
+          }
+        },
+        plugins: {
+          annotation: {
+            annotations: {
+              line1: {
+                type: 'line',
+                yMin: 0,
+                yMax: 0,
+                borderColor: '#DEA7AB',
+                borderWidth: 2,
+                label: {
+                  content: '中央値',
+                  enabled: true,
+                  position: 'end',
+                  backgroundColor: 'rgba(222, 167, 171, 0.8)' // DEA7ABの半透明
+                }
+              }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                const year = context.label;
+                const savedMemo = localStorage.getItem(`memo2_${year}`);
+                if (savedMemo) {
+                  const memoData = JSON.parse(savedMemo);
+                  return `メモ: ${memoData.text}`;
+                } else {
+                  return `(メモはありません)`;
+                }
+              }
+            },
+            title: function () {
+              return '';
+            }
+          },
+          legend: {
+            display: false // 凡例を非表示に設定
+          }
+        }
+      },
+      plugins: [{
+        // タイトルを描画するカスタムプラグイン
+        afterDatasetsDraw: function (chart) {
+          const ctx = chart.ctx;
+          const fontHeight = 14; // フォントの高さ
+          chart.data.datasets[0].data.forEach((value, index) => {
+            const x = chart.scales.x.getPixelForValue(chart.data.labels[index]);
+            const y = chart.scales.y.getPixelForValue(value !== null ? value : 0);
+            const year = chart.data.labels[index];
+            const savedMemo = localStorage.getItem(`memo2_${year}`);
+            if (savedMemo) {
+              const memoData = JSON.parse(savedMemo);
+              ctx.font = `${fontHeight}px "メイリオ", "Meiryo", sans-serif`;
+              ctx.fillStyle = '#090F11';
+              ctx.fillText(memoData.title, x + 10, y - 10);
+            }
+          });
+        }
+      }]
+    };
+
+    // チャートを描画
+    window.onload = function () {
+      const ctx = document.getElementById('lifePlanChart').getContext('2d');
+      window.lifePlanChart = new Chart(ctx, config);
+      updateMemoTable(); // ページ読み込み時にメモ表を更新
+    };
+
+    // メモ表を更新する関数
+    function updateMemoTable() {
+      const tbody = $('#memo_table tbody');
+      tbody.empty(); // 既存の行をクリア
+
+      years.forEach(year => {
+        const savedData = localStorage.getItem(`memo2_${year}`);
+        if (savedData) {
+          const parsedData = JSON.parse(savedData);
+          const row = `<tr>
+                  <td><input type="number" value="${year}" class="year-input input-field" data-year="${year}" readonly></td>
+                  <td><input type="number" value="${parsedData.happiness}" class="happiness-input input-field" data-year="${year}" min="-5" max="5"></td>
+                  <td><input type="text" value="${parsedData.title}" class="title-input input-field" data-year="${year}"></td>
+                  <td><input type="text" value="${parsedData.text}" class="text-input input-field" data-year="${year}"></td>
+                  <td>
+                  <button class="save-row button" data-year="${year}">保存</button>
+                  <button class="delete-row button" data-year="${year}">削除</button>
+                  </td>
+                </tr>`;
+          tbody.append(row);
+        }
+      });
+
+      $('.save-row').on('click', function () {
+        const year = $(this).data('year');
+        const happiness = parseFloat($(`.happiness-input[data-year="${year}"]`).val());
+        const title = $(`.title-input[data-year="${year}"]`).val();
+        const text = $(`.text-input[data-year="${year}"]`).val();
+        const data = {
+          title: title,
+          text: text,
+          happiness: happiness
+        };
+        const json = JSON.stringify(data);
+        localStorage.setItem(`memo2_${year}`, json);
+        alert(`${year}のメモが保存されました。`);
+        updateChart(year, happiness);
+        updateMemoTable();
+      });
+
+      $('.delete-row').on('click', function () {
+        const year = $(this).data('year');
+        localStorage.removeItem(`memo2_${year}`);
+        updateChart(year, null);
+        updateMemoTable();
+      });
+    }
+
+    // チャートを更新する関数
+    function updateChart(year, happiness) {
+      const index = years.indexOf(year);
+      if (index !== -1) {
+        window.lifePlanChart.data.datasets[0].data[index] = happiness;
+        window.lifePlanChart.update();
+      }
+    }
+
+    // 最大年齢を更新するときの処理
+    $('#update_max_year').on('click', function () {
+      const newMaxYear = parseInt($('#max_year_input').val());
+      if (newMaxYear > 20) {
+        maxYear = newMaxYear;
+        years = generateYears(maxYear);
+        window.lifePlanChart.data.labels = years;
+        window.lifePlanChart.data.datasets[0].data = years.map(year => {
+          const savedData = localStorage.getItem(`memo2_${year}`);
+          if (savedData) {
+            const parsedData = JSON.parse(savedData);
+            return parsedData.happiness;
+          }
+          return null;
+        });
+        window.lifePlanChart.update();
+        alert(`最大年齢が${maxYear}に更新されました。`);
+        updateMemoTable();
+      } else {
+        alert("最大年齢は20より大きい数値を入力してください。");
+      }
+    });
+
+    // 行を追加する関数
+    function addRow(year = '', happiness = '', title = '', text = '') {
+      const tbody = $('#memo_table tbody');
+      const newRow = `<tr>
+                  <td><input type="number" value="${year}" class="year-input input-field"></td>
+                  <td><input type="number" value="${happiness}" class="happiness-input input-field" min="-5" max="5"></td>
+                  <td><input type="text" value="${title}" class="title-input input-field"></td>
+                  <td><input type="text" value="${text}" class="text-input input-field"></td>
+                  <td>
+                    <button class="save-row button">保存</button>
+                    <button class="delete-row button">削除</button>
+                  </td>
+                </tr>`;
+      tbody.append(newRow);
+
+      $('.save-row').off('click').on('click', function () {
+        const row = $(this).closest('tr');
+        const year = parseFloat(row.find('.year-input').val());
+        const happiness = parseFloat(row.find('.happiness-input').val());
+        const title = row.find('.title-input').val();
+        const text = row.find('.text-input').val();
+        if (!isNaN(year) && !isNaN(happiness)) {
+          const data = {
+            title: title,
+            text: text,
+            happiness: happiness
+          };
+          const json = JSON.stringify(data);
+          localStorage.setItem(`memo2_${year}`, json);
+          alert(`${year}のメモが保存されました。`);
+          updateChart(year, happiness);
+          updateMemoTable();
+        } else {
+          alert("有効な年と幸福度を入力してください。");
+        }
+      });
+
+      $('.delete-row').off('click').on('click', function () {
+        const row = $(this).closest('tr');
+        const year = parseFloat(row.find('.year-input').val());
+        if (!isNaN(year)) {
+          localStorage.removeItem(`memo2_${year}`);
+          updateChart(year, null);
+          updateMemoTable();
+        } else {
+          row.remove();
+        }
+      });
+    }
+
+    // 行を追加ボタンのクリックイベント
+    $('#add_row').on('click', function () {
+      addRow();
+    });
+
+  </script>
+</body>
+
+</html>
+
