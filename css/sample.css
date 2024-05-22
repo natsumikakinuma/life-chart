@@ -1,107 +1,171 @@
 body {
     font-family: 'メイリオ', 'Meiryo', sans-serif;
     color: #090F11;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    padding: 0;
 }
 
 h1 {
     text-align: center;
     color: #92977E;
-    /* テキストの色を設定します。任意の色に変更してください。 */
+    margin-top: 10px;
+    /* 必要に応じて調整 */
+    margin-bottom: 10px;
+    /* 必要に応じて調整 */
 }
 
-.button-container {
+.tabs {
     display: flex;
     justify-content: center;
-    margin-top: 10px;
+    margin-bottom: 10px;
+    /* 必要に応じて調整 */
 }
 
-input,
-textarea,
-button {
-    font-family: 'メイリオ', 'Meiryo', sans-serif;
-    color: #090F11;
+.tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    background-color: #B49A76;
+    color: #ffffff;
+    margin: 0 5px;
+    border-radius: 5px;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.tab:hover {
+    background-color: #D1C8BB;
+    transform: scale(1.05);
+}
+
+.tab:active {
+    background-color: #6B4D3B;
+    transform: scale(0.95);
+}
+
+.tab.active {
+    background-color: #6B4D3B;
+}
+
+.content {
+    display: none;
+    width: 80%;
+}
+
+.content.active {
+    display: block;
 }
 
 .container {
-    width: 75%;
-    margin: auto;
+    width: 100%;
+    margin: 0;
+    /* 全体のマージンをリセット */
 }
-
-.container-with-margin-top {
-    margin-top: 20px;
+.input-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    /* フィールド間の間隔を指定 */
+    justify-content: space-between;
+    /* 左寄りにならないように調整 */
+    margin: 0;
+    /* 上の余白をなくす */
 }
 
 .input-field {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
+    width: calc(16% - 10px);
+    /* 各フィールドの幅を指定し、間隔を考慮 */
+    padding: 5px;
+    margin: 0;
+}
+
+.filter-field {
+    width: calc(16% - 10px);
+    padding: 5px;
+    margin: 0;
+    background-color: #ececec;
+    /* グレーに設定 */
+    border: 1px solid #ececec;
+    /* グレーの境界線 */
+    border-radius: 5px;
+    /* 角を丸くする */
 }
 
 .textarea-field {
-    width: 100%;
-    height: 200px;
-    padding: 10px;
-    margin-top: 10px;
-}
-
-.button {
-    padding: 10px;
-    margin-top: 10px;
-}
-
-#lifePlanChart {
-    width: 80%;
-    /* チャートの幅を80%に設定 */
-    height: auto;
-    /* 高さを自動調整 */
-}
-
-.update-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-}
-
-.memo-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-.memo-table th,
-.memo-table td {
-    border: 1px solid #ccc;
-    padding: 8px;
-    text-align: left;
-}
-
-.memo-table th {
-    background-color: #f2f2f2;
-}
-
-.memo-table input {
-    width: 100%;
-    box-sizing: border-box;
+    width: 65%;
+    /* 必要に応じて調整 */
+    padding: 5px;
+    margin: 10px 0;
+    /* 上下の余白を設定 */
+    height: 120px;
+    border: 2px solid #B49A76;
+    /* 枠の色をグラフの線の色に変更 */
+    border-radius: 10px;
+    /* 角を丸くする */
 }
 
 .button-container {
     display: flex;
     justify-content: center;
-    margin-top: 20px;
+    /* ボタンを中央に配置 */
+    margin-top: 10px;
+}
+.input-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  gap: 10px; /* フィールド間の間隔を指定 */
+  justify-content: space-between; /* 左寄りにならないように調整 */
+  margin: 0; /* 上の余白をなくす */
 }
 
+.input-field {
+    width: calc(16% - 10px);
+    padding: 5px;
+    margin: 0;
+    border-radius: 5px;
+    /* 角を丸くする */
+    border: 1px solid #B0B0B0;
+    /* グレーの境界線 */
+}
+
+.filter-field {
+    width: calc(16% - 10px);
+    padding: 5px;
+    margin: 0;
+    background-color: #D3D3D3;
+    /* グレーに設定 */
+    border: 1px solid #B0B0B0;
+    /* グレーの境界線 */
+    border-radius: 5px;
+    /* 角を丸くする */
+}
+
+.textarea-field {
+  width: calc(100% - 10px); /* 全体の幅から間隔を引いた値を指定 */
+    padding: 5px;
+  margin: 10px 0; /* 上下の余白を設定 */
+    height: 120px;
+}
+
+.button-container {
+    display: flex;
+  justify-content: center; /* ボタンを中央に配置 */
+    margin-top: 10px;
+}
 .button {
+    padding: 5px;
     background-color: #B49A76;
     color: #ffffff;
     border: none;
     border-radius: 5px;
-    padding: 10px 20px;
     font-size: 14px;
     cursor: pointer;
     transition: background-color 0.3s, transform 0.3s;
+    margin-left: 5px;
 }
-
 .button:hover {
     background-color: #D1C8BB;
     transform: scale(1.05);
@@ -112,56 +176,33 @@ button {
     transform: scale(0.95);
 }
 
-.memo-table th {
-    background-color: #D1C8BB;
-    /* グラフの背景色と一致 */
-    color: #090F11;
+#lifePlanChart {
+    width: 100%;
+    height: auto;
+}
+
+.memo-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+.memo-table th,
+.memo-table td {
     border: 1px solid #B49A76;
-    /* グラフのボーダー色と一致 */
+    /* グラフと同じ色に変更 */
     padding: 8px;
     text-align: left;
+}
+
+.memo-table th {
+    background-color: #D1C8BB;
+    /* グラフの色に合わせた背景色 */
+    color: #6B4D3B;
+    /* グラフの色に合わせた文字色 */
 }
 
 .memo-table td {
-    border: 1px solid #B49A76;
-    /* グラフのボーダー色と一致 */
-    padding: 8px;
-    text-align: left;
-    color: #090F11;
-}
-
-.memo-table input {
-    width: 100%;
-    box-sizing: border-box;
-    border: 1px solid #B49A76;
-    /* グラフのボーダー色と一致 */
-    padding: 5px;
-    border-radius: 5px;
     background-color: rgba(209, 200, 187, 0.2);
-    /* グラフの背景色の半透明 */
+    /* グラフのポイント背景色と同じ色 */
     color: #090F11;
-}
-
-.memo-table button {
-    background-color: #B49A76;
-    /* グラフのボーダー色と一致 */
-    color: #ffffff;
-    border: none;
-    border-radius: 5px;
-    padding: 5px 10px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.3s;
-}
-
-.memo-table button:hover {
-    background-color: #D1C8BB;
-    /* グラフの背景色と一致 */
-    transform: scale(1.05);
-}
-
-.memo-table button:active {
-    background-color: #6B4D3B;
-    /* グラフのボーダー色と一致 */
-    transform: scale(0.95);
 }
